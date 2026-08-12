@@ -1,0 +1,6 @@
+devices:
+  - name: R1
+    host: 192.168.100.11
+    device_type: cisco_ios
+    role: router
+    baseline: cisco_router.cfg

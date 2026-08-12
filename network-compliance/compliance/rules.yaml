@@ -1,0 +1,40 @@
+rules:
+  - id: SEC-001
+    name: SSH required
+    description: Remote management must use SSH
+    type: required
+    config: "transport input ssh"
+    severity: high
+    remediation: "Configure transport input ssh"
+
+  - id: SEC-002
+    name: Telnet prohibited
+    description: Telnet must not be enabled
+    type: forbidden
+    config: "transport input telnet"
+    severity: critical
+    remediation: "Remove Telnet and configure SSH"
+
+  - id: NTP-001
+    name: Approved NTP server
+    description: Device must use the approved NTP server
+    type: required
+    config: "ntp server 10.10.10.10"
+    severity: medium
+    remediation: "Configure ntp server 10.10.10.10"
+
+  - id: WEB-001
+    name: HTTP server disabled
+    description: HTTP management service must be disabled
+    type: required
+    config: "no ip http server"
+    severity: high
+    remediation: "Configure no ip http server"
+
+  - id: AAA-001
+    name: AAA enabled
+    description: AAA must be enabled
+    type: required
+    config: "aaa new-model"
+    severity: high
+    remediation: "Configure aaa new-model"
