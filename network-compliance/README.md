@@ -88,6 +88,33 @@ The collection module in `scripts/collect.py` reads `inventory/devices.yaml`, us
 
 > Credentials are not stored in Git.
 
+## Credentials (environment variables)
+
+For safety the tool reads device credentials from environment variables instead of storing them in Git. Set these in PowerShell or Command Prompt before running the collector.
+
+PowerShell example:
+
+```powershell
+$env:NETMIKO_USERNAME = "your_username"
+$env:NETMIKO_PASSWORD = "your_password"
+# optional enable/secret
+$env:NETMIKO_SECRET = "your_enable_secret"
+```
+
+Command Prompt (cmd.exe) example:
+
+```cmd
+set NETMIKO_USERNAME=your_username
+set NETMIKO_PASSWORD=your_password
+set NETMIKO_SECRET=your_enable_secret
+```
+
+After setting the variables, run the main script:
+
+```powershell
+python scripts/main.py
+```
+
 ## Run the analyzer
 
 Use `scripts/main.py` to collect device configs, compare against baselines, run compliance rules, and generate HTML reports:
