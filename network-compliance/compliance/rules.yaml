@@ -1,40 +1,65 @@
 rules:
   - id: SEC-001
-    name: SSH required
+    name: SSH Required
     description: Remote management must use SSH
     type: required
     config: "transport input ssh"
     severity: high
-    remediation: "Configure transport input ssh"
+    remediation: "Configure line vty with 'transport input ssh'"
 
   - id: SEC-002
-    name: Telnet prohibited
-    description: Telnet must not be enabled
+    name: Telnet Prohibited
+    description: Telnet remote management must be disabled
     type: forbidden
     config: "transport input telnet"
     severity: critical
-    remediation: "Remove Telnet and configure SSH"
+    remediation: "Remove Telnet from VTY lines and enforce SSH"
 
   - id: NTP-001
-    name: Approved NTP server
-    description: Device must use the approved NTP server
+    name: Approved NTP Server
+    description: Device must sync time with approved primary NTP server
     type: required
     config: "ntp server 10.10.10.10"
     severity: medium
-    remediation: "Configure ntp server 10.10.10.10"
+    remediation: "Configure 'ntp server 10.10.10.10'"
 
   - id: WEB-001
-    name: HTTP server disabled
-    description: HTTP management service must be disabled
+    name: HTTP Server Disabled
+    description: Unencrypted HTTP management service must be disabled
     type: required
     config: "no ip http server"
     severity: high
-    remediation: "Configure no ip http server"
+    remediation: "Disable HTTP server using 'no ip http server'"
 
   - id: AAA-001
-    name: AAA enabled
-    description: AAA must be enabled
+    name: AAA Model Enabled
+    description: Authentication, Authorization, and Accounting must be active
     type: required
     config: "aaa new-model"
     severity: high
-    remediation: "Configure aaa new-model"
+    remediation: "Enable AAA using 'aaa new-model'"
+
+  - id: STP-001
+    name: Rapid PVST Spanning Tree
+    description: Switches must run Rapid PVST+ for fast STP convergence
+    type: exact-match
+    config: "spanning-tree mode rapid-pvst"
+    severity: medium
+    remediation: "Configure 'spanning-tree mode rapid-pvst'"
+
+  - id: VTP-001
+    name: VTP Transparent Mode
+    description: VTP mode must be transparent to prevent accidental VLAN wipes
+    type: exact-match
+    config: "vtp mode transparent"
+    severity: high
+    remediation: "Configure 'vtp mode transparent'"
+
+  - id: LOG-001
+    name: Logging Buffer Size Warning
+    description: Logging buffer should be at least 16384 bytes
+    type: warning
+    config: "logging buffered 16384"
+    severity: low
+    remediation: "Increase log buffer with 'logging buffered 16384'"
+

@@ -8,7 +8,7 @@ if str(ROOT) not in sys.path:
 
 from scripts.analyze import analyze_config, generate_diff
 from scripts.collect import collect_all_configs, load_inventory
-from scripts.report import save_report
+from scripts.report import save_daily_summary_report, save_report
 
 
 def main() -> int:
@@ -35,6 +35,8 @@ def main() -> int:
         print(f"Collection failed: {exc}")
         return 1
 
+    all_reports = []
+
     for config_path in collected_files:
         device_name = config_path.parent.name
         baseline_name = None
@@ -56,9 +58,16 @@ def main() -> int:
         diff_text = generate_diff(baseline_path, config_path)
         report_filename = reports_root / f"{device_name}_report.html"
         save_report(report_data, diff_text, report_filename)
-        print(f"Report generated: {report_filename}")
+        all_reports.append(report_data)
+        print(f"Report generated for {device_name}: {report_filename}")
+
+    if all_reports:
+        daily_summary_path = reports_root / "daily_summary_report.html"
+        save_daily_summary_report(all_reports, daily_summary_path)
+        print(f"Daily summary report generated: {daily_summary_path}")
 
     return 0
+
 
 
 if __name__ == "__main__":

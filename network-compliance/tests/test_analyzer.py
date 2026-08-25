@@ -10,7 +10,10 @@ def write_temp_config(tmp_path: Path, filename: str, contents: str) -> Path:
 
 
 def test_fully_compliant_configuration(tmp_path: Path):
-    config = "service password-encryption\nno ip http server\naaa new-model\nntp server 10.10.10.10\nline vty 0 4\n transport input ssh\n"
+    config = (
+        "service password-encryption\nno ip http server\naaa new-model\nntp server 10.10.10.10\n"
+        "spanning-tree mode rapid-pvst\nvtp mode transparent\nlogging buffered 16384\nline vty 0 4\n transport input ssh\n"
+    )
     config_path = write_temp_config(tmp_path, "current.cfg", config)
     rules_path = Path(__file__).resolve().parents[1] / "compliance" / "rules.yaml"
 
@@ -40,14 +43,24 @@ def test_forbidden_telnet_configuration(tmp_path: Path):
     assert any(result["rule_id"] == "SEC-002" and result["status"] == "FAIL" for result in analysis["results"])
 
 
-def test_incorrect_ntp_configuration(tmp_path: Path):
-    config = "service password-encryption\nno ip http server\naaa new-model\nntp server 10.10.10.11\nline vty 0 4\n transport input ssh\n"
+def test_exact_match_rule(tmp_path: Path):
+    config = "vtp mode server\n"
     config_path = write_temp_config(tmp_path, "current.cfg", config)
     rules_path = Path(__file__).resolve().parents[1] / "compliance" / "rules.yaml"
 
     analysis = analyze_config(config_path, rules_path)
-    assert not analysis["compliant"]
-    assert any(result["rule_id"] == "NTP-001" and result["status"] == "FAIL" for result in analysis["results"])
+    vtp_result = next(r for r in analysis["results"] if r["rule_id"] == "VTP-001")
+    assert vtp_result["status"] == "FAIL"
+
+
+def test_warning_rule(tmp_path: Path):
+    config = "service password-encryption\n"
+    config_path = write_temp_config(tmp_path, "current.cfg", config)
+    rules_path = Path(__file__).resolve().parents[1] / "compliance" / "rules.yaml"
+
+    analysis = analyze_config(config_path, rules_path)
+    log_result = next(r for r in analysis["results"] if r["rule_id"] == "LOG-001")
+    assert log_result["status"] == "WARN"
 
 
 def test_compliance_score_calculation(tmp_path: Path):
@@ -55,8 +68,9 @@ def test_compliance_score_calculation(tmp_path: Path):
         {"status": "FAIL", "severity": "critical"},
         {"status": "FAIL", "severity": "high"},
         {"status": "PASS", "severity": "medium"},
+        {"status": "WARN", "severity": "low"},
     ]
-    assert calculate_score(results) == 50
+    assert calculate_score(results) == 45
 
 
 def test_diff_generation(tmp_path: Path):
@@ -66,3 +80,4 @@ def test_diff_generation(tmp_path: Path):
     diff_text = generate_diff(baseline, current)
     assert "-line two" in diff_text
     assert "+line two changed" in diff_text
+

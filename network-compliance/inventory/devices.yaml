@@ -4,3 +4,9 @@ devices:
     device_type: cisco_ios
     role: router
     baseline: cisco_router.cfg
+
+  - name: SW1
+    host: 192.168.100.21
+    device_type: cisco_ios
+    role: switch
+    baseline: cisco_switch.cfg

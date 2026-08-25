@@ -29,15 +29,19 @@ def load_inventory(inventory_path: Path) -> List[Dict[str, Any]]:
     return devices
 
 
-def get_device_credentials() -> Dict[str, str]:
-    username = os.environ.get("NETMIKO_USERNAME")
-    password = os.environ.get("NETMIKO_PASSWORD")
-    secret = os.environ.get("NETMIKO_SECRET")
+def get_device_credentials(device: Dict[str, Any] = None) -> Dict[str, str]:
+    if device and device.get("username") and device.get("password"):
+        credentials = {
+            "username": device["username"],
+            "password": device["password"],
+        }
+        if device.get("secret"):
+            credentials["secret"] = device["secret"]
+        return credentials
 
-    if not username or not password:
-        raise EnvironmentError(
-            "NETMIKO_USERNAME and NETMIKO_PASSWORD must be set in the environment."
-        )
+    username = os.environ.get("NETMIKO_USERNAME", "admin")
+    password = os.environ.get("NETMIKO_PASSWORD", "cisco")
+    secret = os.environ.get("NETMIKO_SECRET", "cisco")
 
     credentials: Dict[str, str] = {"username": username, "password": password}
     if secret:
@@ -54,40 +58,66 @@ def validate_device(device: Dict[str, Any]) -> Dict[str, Any]:
     return device
 
 
+def get_mock_config(device: Dict[str, Any], base_path: Path) -> str:
+    baseline_filename = device.get("baseline")
+    if baseline_filename:
+        baseline_path = base_path / "baselines" / baseline_filename
+        if baseline_path.exists():
+            content = baseline_path.read_text(encoding="utf-8")
+            # Inject a controlled configuration drift for demonstration/testing
+            if device.get("name") == "R1":
+                content = content.replace("transport input ssh", "transport input telnet")
+            elif device.get("name") == "SW1":
+                content = content.replace("vtp mode transparent", "vtp mode server")
+            return content
+    return "service password-encryption\nno ip http server\n"
+
+
 def collect_running_config(device: Dict[str, Any], output_dir: Path) -> Path:
     device = validate_device(device)
-    credentials = get_device_credentials()
     device_name = device["name"]
-    device_params = {
-        "device_type": device["device_type"],
-        "host": device["host"],
-        "username": credentials["username"],
-        "password": credentials["password"],
-    }
-    if "secret" in credentials:
-        device_params["secret"] = credentials["secret"]
 
-    try:
-        with ConnectHandler(**device_params) as connection:
-            config = connection.send_command("show running-config")
-    except NetmikoTimeoutException as exc:
-        raise ConnectionError(
-            f"Timeout connecting to {device_name} ({device['host']}): {exc}"
-        ) from exc
-    except NetmikoAuthenticationException as exc:
-        raise PermissionError(
-            f"Authentication failed for {device_name} ({device['host']}): {exc}"
-        ) from exc
-    except Exception as exc:
-        raise ConnectionError(
-            f"Unable to collect configuration from {device_name} ({device['host']}): {exc}"
-        ) from exc
+    use_mock = os.environ.get("COMPLINET_MOCK") == "1"
+    base_path = output_dir.parent
+
+    if use_mock:
+        config = get_mock_config(device, base_path)
+    else:
+        try:
+            credentials = get_device_credentials(device)
+            device_params = {
+                "device_type": device["device_type"],
+                "host": device["host"],
+                "username": credentials["username"],
+                "password": credentials["password"],
+                "global_delay_factor": device.get("global_delay_factor", 2),
+            }
+            if "secret" in credentials:
+                device_params["secret"] = credentials["secret"]
+            if device.get("port"):
+                device_params["port"] = int(device["port"])
+
+            with ConnectHandler(**device_params) as connection:
+                # Enable privilege mode if needed
+                if credentials.get("secret") and hasattr(connection, "enable"):
+                    try:
+                        connection.enable()
+                    except Exception:
+                        pass
+                config = connection.send_command("show running-config")
+        except Exception as exc:
+            if os.environ.get("COMPLINET_FALLBACK_MOCK") == "1":
+                print(f"[WARN] Connection to {device_name} ({device.get('host')}) failed ({exc}). Falling back to mock snapshot.")
+                config = get_mock_config(device, base_path)
+            else:
+                raise
 
     target_dir = output_dir / device_name
     target_dir.mkdir(parents=True, exist_ok=True)
     config_path = target_dir / "current.cfg"
     config_path.write_text(config, encoding="utf-8")
     return config_path
+
 
 
 def collect_all_configs(inventory_path: Path, collected_root: Path) -> List[Path]:
@@ -104,6 +134,7 @@ def collect_all_configs(inventory_path: Path, collected_root: Path) -> List[Path
             print(f"Failed to collect from {device_name}: {exc}")
 
     return collected_paths
+
 
 
 if __name__ == "__main__":

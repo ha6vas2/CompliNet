@@ -10,6 +10,7 @@ SEVERITY_SCORE_PENALTIES = {
     "high": 20,
     "medium": 10,
     "low": 5,
+    "warning": 5,
 }
 
 
@@ -27,22 +28,28 @@ def read_config(config_path: Path) -> List[str]:
 def evaluate_rule(rule: Dict[str, Any], config_lines: List[str]) -> Dict[str, Any]:
     rule_id = rule.get("id")
     name = rule.get("name")
-    config_match = rule.get("config")
-    rule_type = rule.get("type")
-    severity = rule.get("severity")
-    remediation = rule.get("remediation")
+    config_match = rule.get("config", "")
+    rule_type = rule.get("type", "required")
+    severity = rule.get("severity", "medium")
+    remediation = rule.get("remediation", "")
+
+    pattern = config_match.strip()
 
     if rule_type == "required":
-        passed = config_match in config_lines
+        status = "PASS" if pattern in config_lines else "FAIL"
     elif rule_type == "forbidden":
-        passed = config_match not in config_lines
+        status = "PASS" if pattern not in config_lines else "FAIL"
+    elif rule_type == "exact-match":
+        status = "PASS" if pattern in config_lines else "FAIL"
+    elif rule_type == "warning":
+        status = "PASS" if pattern in config_lines else "WARN"
     else:
-        passed = False
+        status = "PASS" if pattern in config_lines else "FAIL"
 
     return {
         "rule_id": rule_id,
         "name": name,
-        "status": "PASS" if passed else "FAIL",
+        "status": status,
         "severity": severity,
         "remediation": remediation,
         "type": rule_type,
@@ -50,13 +57,18 @@ def evaluate_rule(rule: Dict[str, Any], config_lines: List[str]) -> Dict[str, An
     }
 
 
+
 def calculate_score(rule_results: List[Dict[str, Any]]) -> int:
     score = 100
     for result in rule_results:
         if result["status"] == "FAIL":
-            penalty = SEVERITY_SCORE_PENALTIES.get(result["severity"], 0)
+            penalty = SEVERITY_SCORE_PENALTIES.get(result["severity"], 10)
+            score -= penalty
+        elif result["status"] == "WARN":
+            penalty = SEVERITY_SCORE_PENALTIES.get(result["severity"], 5)
             score -= penalty
     return max(score, 0)
+
 
 
 def analyze_config(config_path: Path, rules_path: Path) -> Dict[str, Any]:
