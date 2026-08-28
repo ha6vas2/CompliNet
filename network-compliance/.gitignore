@@ -1,13 +1,27 @@
+# Python
 __pycache__/
 *.pyc
 .venv/
 venv/
 
+# Secrets
 .env
 *.key
 *.pem
 
+# Runtime collected configurations
 collected/
+
+# Generated reports
 reports/
 
-*.log
+# Containerlab runtime
+clab-*/
+
+# Lab credentials
+lab/ssh/
+
+# Editor / OS
+.vscode/
+.DS_Store
+Thumbs.db

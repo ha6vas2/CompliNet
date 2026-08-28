@@ -1,0 +1,22 @@
+name: complinet
+
+topology:
+  nodes:
+    r1:
+      kind: linux
+      image: complinet-frr:latest
+      binds:
+        - r1/daemons:/etc/frr/daemons
+        - r1/frr.conf:/etc/frr/frr.conf
+        - ssh/authorized_keys:/home/netops/.ssh/authorized_keys:ro
+
+    r2:
+      kind: linux
+      image: complinet-frr:latest
+      binds:
+        - r2/daemons:/etc/frr/daemons
+        - r2/frr.conf:/etc/frr/frr.conf
+        - ssh/authorized_keys:/home/netops/.ssh/authorized_keys:ro
+
+  links:
+    - endpoints: ["r1:eth1", "r2:eth1"]
