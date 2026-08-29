@@ -15,7 +15,7 @@ const RemediationGuide = ({ summary }) => {
       <div className="card">
         {failedRules.length === 0 ? (
           <div style={{ padding: '32px', textAlign: 'center', color: 'var(--pass-color)' }}>
-            🎉 <strong>No remediations required! All devices are fully compliant with baseline standards.</strong>
+            <strong>No remediations required! All devices are fully compliant with baseline standards.</strong>
           </div>
         ) : (
           <div className="table-container">

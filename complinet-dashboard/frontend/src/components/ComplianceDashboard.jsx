@@ -120,7 +120,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
 
         {failed_rules.length === 0 ? (
           <div style={{ padding: '32px', textAlign: 'center', color: 'var(--pass-color)' }}>
-            🎉 <strong>All network devices are 100% compliant with approved Git baselines!</strong>
+            <strong>All network devices are 100% compliant with approved Git baselines.</strong>
           </div>
         ) : (
           <div className="table-container">

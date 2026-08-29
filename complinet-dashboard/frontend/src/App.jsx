@@ -98,7 +98,6 @@ const App = () => {
       {/* Top Glassmorphism Navigation Bar */}
       <header className="header">
         <div className="logo-area">
-          <span className="logo-icon">🔍</span>
           <div>
             <div className="logo-title">CompliNet</div>
             <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
@@ -116,7 +115,7 @@ const App = () => {
             + Add Device
           </button>
           <button className="btn btn-primary" onClick={handleRunAudit} disabled={runningAudit}>
-            {runningAudit ? '⚡ Running Collection & Analysis...' : '⚡ Run Compliance Audit'}
+            {runningAudit ? 'Running Collection & Analysis...' : 'Run Compliance Audit'}
           </button>
         </div>
       </header>
@@ -128,25 +127,25 @@ const App = () => {
           className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
         >
-          📊 Executive Summary
+          Executive Summary
         </button>
         <button
           className={`tab-btn ${activeTab === 'devices' ? 'active' : ''}`}
           onClick={() => setActiveTab('devices')}
         >
-          🖥️ Devices & Drift Diffs ({devices.length})
+          Devices & Drift Diffs ({devices.length})
         </button>
         <button
           className={`tab-btn ${activeTab === 'rules' ? 'active' : ''}`}
           onClick={() => setActiveTab('rules')}
         >
-          🔍 Compliance Matrix ({rules.length} Rules)
+          Compliance Matrix ({rules.length} Rules)
         </button>
         <button
           className={`tab-btn ${activeTab === 'remediation' ? 'active' : ''}`}
           onClick={() => setActiveTab('remediation')}
         >
-          🛠️ Remediation Playbook ({summary?.failed_rules?.length || 0})
+          Remediation Playbook ({summary?.failed_rules?.length || 0})
         </button>
       </nav>
 
@@ -163,7 +162,7 @@ const App = () => {
               marginBottom: '24px',
             }}
           >
-            ⚠️ {error}
+            {error}
           </div>
         )}
 
