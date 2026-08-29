@@ -38,7 +38,34 @@ const App = () => {
   };
 
   useEffect(() => {
+    let active = true;
+
+    const runLiveAudit = async () => {
+      try {
+        const newSummary = await triggerAuditRun();
+
+        if (!active) return;
+
+        setSummary(newSummary);
+
+        const newDevices = await fetchDevices();
+
+        if (active) {
+          setDevices(newDevices);
+        }
+      } catch (err) {
+        console.error('Live compliance audit failed:', err);
+      }
+    };
+
     loadAllData();
+
+    const interval = setInterval(runLiveAudit, 10000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const handleRunAudit = async () => {
@@ -51,23 +78,6 @@ const App = () => {
     } catch (err) {
       console.error('Audit run failed:', err);
       alert('Audit run failed: ' + err.message);
-    } finally {
-      setRunningAudit(false);
-    }
-  };
-
-  const handleGNS3Sync = async () => {
-    try {
-      setRunningAudit(true);
-      const res = await syncGNS3();
-      if (res.status === 'success') {
-        alert(`Successfully discovered and imported ${res.count} active node(s) from GNS3!`);
-        await loadAllData();
-      } else {
-        alert(`GNS3 Sync Notice: ${res.message}`);
-      }
-    } catch (err) {
-      alert('GNS3 sync error: ' + (err.response?.data?.detail || err.message));
     } finally {
       setRunningAudit(false);
     }
@@ -98,11 +108,12 @@ const App = () => {
         </div>
 
         <div className="header-actions">
-          <button className="btn btn-secondary" onClick={handleGNS3Sync} disabled={runningAudit}>
-            🌐 Sync GNS3 Topology
-          </button>
+          <div className="live-status">
+            <span className="live-dot"></span>
+            LIVE · 10s
+          </div>
           <button className="btn btn-secondary" onClick={() => setIsAddModalOpen(true)}>
-            + Add Device IP
+            + Add Device
           </button>
           <button className="btn btn-primary" onClick={handleRunAudit} disabled={runningAudit}>
             {runningAudit ? '⚡ Running Collection & Analysis...' : '⚡ Run Compliance Audit'}

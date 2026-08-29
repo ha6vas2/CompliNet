@@ -44,7 +44,7 @@ const DeviceList = ({ devices, onOpenAddDevice }) => {
           </p>
         </div>
         <button className="btn btn-primary" onClick={onOpenAddDevice}>
-          + Add Device IP & Baseline
+          + Add Device
         </button>
       </div>
 

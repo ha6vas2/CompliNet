@@ -7,6 +7,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
     total_devices = 0,
     compliant_devices = 0,
     non_compliant_devices = 0,
+    drift_devices = 0,
     average_score = 100,
     severity_counts = {},
     failed_rules = [],
@@ -17,7 +18,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
       {/* Metric Cards */}
       <div className="metrics-grid">
         <div className="card">
-          <div className="card-title">Network Health Score</div>
+          <div className="card-title">Compliance Score</div>
           <div
             className="card-value"
             style={{
@@ -31,13 +32,13 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
           >
             {average_score} <span style={{ fontSize: '18px', color: 'var(--text-muted)' }}>/ 100</span>
           </div>
-          <div className="card-subtext">Git Baseline Alignment</div>
+          <div className="card-subtext">Policy Evaluation Result</div>
         </div>
 
         <div className="card">
-          <div className="card-title">Audit Scope</div>
+          <div className="card-title">Monitored Devices</div>
           <div className="card-value">{total_devices}</div>
-          <div className="card-subtext">Active Monitored Devices</div>
+          <div className="card-subtext">Audit Scope</div>
         </div>
 
         <div className="card">
@@ -49,9 +50,9 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
         </div>
 
         <div className="card">
-          <div className="card-title">Drift / Non-Compliant</div>
+          <div className="card-title">Configuration Drift</div>
           <div className="card-value" style={{ color: 'var(--fail-color)' }}>
-            {non_compliant_devices}
+            {drift_devices || non_compliant_devices}
           </div>
           <div className="card-subtext">Requires Engineering Review</div>
         </div>
@@ -67,7 +68,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
               {severity_counts.critical || 0}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Telnet / Urgent Security Risk
+              Routing / Service Impact
             </div>
           </div>
 
@@ -77,7 +78,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
               {severity_counts.high || 0}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              SSH / AAA / VTP Risk
+              Routing Identity / Policy Risk
             </div>
           </div>
 
@@ -87,7 +88,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
               {severity_counts.medium || 0}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              NTP / STP Mode
+              Configuration Standard Violation
             </div>
           </div>
 
@@ -97,7 +98,7 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
               {(severity_counts.low || 0) + (severity_counts.warning || 0)}
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>
-              Logging Buffer Size
+              Operational Configuration
             </div>
           </div>
         </div>

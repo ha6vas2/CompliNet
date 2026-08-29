@@ -34,7 +34,3 @@ export const createDevice = async (deviceData) => {
   return response.data;
 };
 
-export const syncGNS3 = async (gns3Url = 'http://127.0.0.1:3080') => {
-  const response = await apiClient.post(`/compliance/gns3-sync?gns3_url=${encodeURIComponent(gns3Url)}`);
-  return response.data;
-};
