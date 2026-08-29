@@ -94,6 +94,7 @@ class ComplianceService:
         total_devices = len(all_device_results)
         compliant_count = sum(1 for d in all_device_results if d.get("compliant"))
         non_compliant_count = total_devices - compliant_count
+        drift_count = sum(1 for d in all_device_results if not d.get("compliant"))
         avg_score = (
             round(sum(d.get("score", 0) for d in all_device_results) / max(total_devices, 1), 1)
             if total_devices
@@ -124,6 +125,7 @@ class ComplianceService:
             "total_devices": total_devices,
             "compliant_devices": compliant_count,
             "non_compliant_devices": non_compliant_count,
+            "drift_devices": drift_count,
             "average_score": avg_score,
             "severity_counts": severity_counts,
             "failed_rules": all_failed_rules,
