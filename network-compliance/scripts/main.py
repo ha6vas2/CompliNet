@@ -9,7 +9,7 @@ if str(ROOT) not in sys.path:
 from scripts.analyze import analyze_config, generate_diff
 from scripts.collect import collect_all_configs, load_inventory
 from scripts.report import save_daily_summary_report, save_report
-
+from scripts.containerlab_collector import collect_all
 
 def main() -> int:
     base_path = Path(__file__).resolve().parents[1]
@@ -30,7 +30,7 @@ def main() -> int:
         return 1
 
     try:
-        collected_files = collect_all_configs(inventory_path, collected_root)
+        collected_files = collect_all(devices)
     except Exception as exc:
         print(f"Collection failed: {exc}")
         return 1

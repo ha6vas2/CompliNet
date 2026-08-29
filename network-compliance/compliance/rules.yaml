@@ -1,65 +1,71 @@
 rules:
-  - id: SEC-001
-    name: SSH Required
-    description: Remote management must use SSH
-    type: required
-    config: "transport input ssh"
-    severity: high
-    remediation: "Configure line vty with 'transport input ssh'"
 
-  - id: SEC-002
-    name: Telnet Prohibited
-    description: Telnet remote management must be disabled
-    type: forbidden
-    config: "transport input telnet"
-    severity: critical
-    remediation: "Remove Telnet from VTY lines and enforce SSH"
-
-  - id: NTP-001
-    name: Approved NTP Server
-    description: Device must sync time with approved primary NTP server
+  - id: SYS-001
+    name: Hostname configured
+    description: Device must have a hostname configured.
     type: required
-    config: "ntp server 10.10.10.10"
+    config: "hostname "
+    match: contains
+    scope: all
     severity: medium
-    remediation: "Configure 'ntp server 10.10.10.10'"
+    remediation: "Restore the approved hostname."
 
-  - id: WEB-001
-    name: HTTP Server Disabled
-    description: Unencrypted HTTP management service must be disabled
+  - id: SYS-002
+    name: Informational logging
+    description: Informational syslog logging must be configured.
     type: required
-    config: "no ip http server"
-    severity: high
-    remediation: "Disable HTTP server using 'no ip http server'"
-
-  - id: AAA-001
-    name: AAA Model Enabled
-    description: Authentication, Authorization, and Accounting must be active
-    type: required
-    config: "aaa new-model"
-    severity: high
-    remediation: "Enable AAA using 'aaa new-model'"
-
-  - id: STP-001
-    name: Rapid PVST Spanning Tree
-    description: Switches must run Rapid PVST+ for fast STP convergence
-    type: exact-match
-    config: "spanning-tree mode rapid-pvst"
-    severity: medium
-    remediation: "Configure 'spanning-tree mode rapid-pvst'"
-
-  - id: VTP-001
-    name: VTP Transparent Mode
-    description: VTP mode must be transparent to prevent accidental VLAN wipes
-    type: exact-match
-    config: "vtp mode transparent"
-    severity: high
-    remediation: "Configure 'vtp mode transparent'"
-
-  - id: LOG-001
-    name: Logging Buffer Size Warning
-    description: Logging buffer should be at least 16384 bytes
-    type: warning
-    config: "logging buffered 16384"
+    config: "log syslog informational"
+    match: exact
+    scope: all
     severity: low
-    remediation: "Increase log buffer with 'logging buffered 16384'"
+    remediation: "Configure informational syslog logging."
 
+  - id: SYS-003
+    name: IPv6 forwarding disabled
+    description: IPv6 forwarding must remain disabled.
+    type: required
+    config: "no ipv6 forwarding"
+    match: exact
+    scope: all
+    severity: low
+    remediation: "Disable IPv6 forwarding."
+
+  - id: OSPF-001
+    name: OSPF enabled
+    description: OSPF must be configured.
+    type: required
+    config: "router ospf"
+    match: exact
+    scope: all
+    severity: critical
+    remediation: "Restore the OSPF process."
+
+  - id: OSPF-002
+    name: OSPF Area 0 network
+    description: The inter-router network must participate in OSPF Area 0.
+    type: required
+    config: "network 10.0.12.0/30 area 0"
+    match: exact
+    scope: all
+    severity: critical
+    remediation: "Restore the required OSPF Area 0 network statement."
+
+  - id: OSPF-003
+    name: R1 OSPF router ID
+    description: R1 must use router ID 1.1.1.1.
+    type: required
+    config: "ospf router-id 1.1.1.1"
+    match: exact
+    scope: R1
+    severity: high
+    remediation: "Restore OSPF router ID 1.1.1.1."
+
+  - id: OSPF-004
+    name: R2 OSPF router ID
+    description: R2 must use router ID 2.2.2.2.
+    type: required
+    config: "ospf router-id 2.2.2.2"
+    match: exact
+    scope: R2
+    severity: high
+    remediation: "Restore OSPF router ID 2.2.2.2."
