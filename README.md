@@ -8,7 +8,7 @@ It periodically collects device configurations and uses **static analysis** to c
 
 ---
 
-## ⚙️ How It Works
+##  How It Works
 
 ```text
 Network Devices
