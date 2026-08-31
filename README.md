@@ -1,4 +1,4 @@
-# 🔍 CompliNet
+# CompliNet
 
 ### Network Configuration Drift Detection & Compliance Tool
 
@@ -33,7 +33,7 @@ Collect Running Config
 
 ---
 
-## 🛠️ Built With
+## Built With
 
 * **Python**
 * **Netmiko**
@@ -44,15 +44,15 @@ Collect Running Config
 
 ---
 
-## 🎯 Project Goal
+## Project Goal
 
 CompliNet explores how simple network automation can:
 
-* 🔍 Detect unnoticed configuration changes
-* ✅ Identify compliant and non-compliant devices
-* ⚡ Speed up network configuration audits
-* 🛡️ Reduce risks caused by configuration drift
-* 🔧 Recommend remediation without automatically modifying devices
+* Detect unnoticed configuration changes
+* Identify compliant and non-compliant devices
+* Speed up network configuration audits
+* Reduce risks caused by configuration drift
+* Recommend remediation without automatically modifying devices
 
 ---
 
