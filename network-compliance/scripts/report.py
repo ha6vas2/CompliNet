@@ -121,7 +121,7 @@ def build_daily_summary_html(all_reports: List[Dict[str, Any]]) -> str:
     <div class="card"><div>Total Devices</div><div class="card-num">{total_devices}</div></div>
     <div class="card"><div>Compliant Devices</div><div class="card-num" style="color:green">{compliant_devices}</div></div>
     <div class="card"><div>Non-Compliant Devices</div><div class="card-num" style="color:red">{non_compliant_devices}</div></div>
-    <div class="card"><div>Average Health Score</div><div class="card-num">{avg_score} / 100</div></div>
+    <div class="card"><div>Average Compliance Score</div><div class="card-num">{avg_score} / 100</div></div>
   </div>
 
   <h2>Device Summary</h2>

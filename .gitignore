@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# Environment / secrets
+.env
+*.key
+*.pem
+
+# Runtime data
+network-compliance/collected/
+network-compliance/reports/
+
+# Containerlab
+clab-*/
+network-compliance/lab/ssh/
+
+# Frontend build
+complinet-dashboard/dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

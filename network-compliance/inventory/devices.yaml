@@ -1,12 +1,16 @@
 devices:
   - name: R1
     source: containerlab
-    container: clab-complinet-r1
+    platform: frr
     role: router
+    container: clab-complinet-r1
     baseline: R1.cfg
+    enabled: true
 
   - name: R2
     source: containerlab
-    container: clab-complinet-r2
+    platform: frr
     role: router
+    container: clab-complinet-r2
     baseline: R2.cfg
+    enabled: true

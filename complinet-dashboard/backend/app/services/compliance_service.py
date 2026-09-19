@@ -79,63 +79,12 @@ class ComplianceService:
         device: Dict[str, Any],
     ) -> Dict[str, Any]:
 
-        device_name = device["name"]
+        device_name = device.get("name", "unknown")
         baseline_name = device.get("baseline")
-
-<<<<<<< HEAD
-        # If collected config doesn't exist yet, try creating from mock/baseline
-        if not collected_config.exists():
-            collected_config.parent.mkdir(parents=True, exist_ok=True)
-            baseline_file = self.baselines_root / baseline_name if baseline_name else None
-            sample_content = (
-                baseline_file.read_text(encoding="utf-8")
-                if (baseline_file and baseline_file.exists())
-                else "service password-encryption\n"
-            )
-            # Inject minor drift for R1 / SW1 demonstration if creating initial snapshot
-            if device_name == "R1":
-                sample_content = sample_content.replace("transport input ssh", "transport input telnet")
-            elif device_name == "SW1":
-                sample_content = sample_content.replace("vtp mode transparent", "vtp mode server")
-            collected_config.write_text(sample_content, encoding="utf-8")
-
-        baseline_path = self.baselines_root / (baseline_name or "")
-        analysis = analyze_config(collected_config, self.rules_path) if analyze_config else {}
-
-        diff_text = ""
-        if baseline_path.exists() and generate_diff:
-            diff_text = generate_diff(baseline_path, collected_config)
-
-        analysis["diff"] = diff_text
-        analysis["role"] = device.get("role", "device")
-        analysis["host"] = device.get("host", "127.0.0.1")
-        analysis["device_type"] = device.get("device_type", "cisco_ios")
-        analysis["baseline"] = baseline_name
-        return analysis
-
-    def get_all_device_compliance(self) -> List[Dict[str, Any]]:
-        devices = self.get_inventory()
-        results = []
-        for device in devices:
-            results.append(self.run_analysis_for_device(device))
-        return results
-
-    def get_summary_metrics(self) -> Dict[str, Any]:
-        all_device_results = self.get_all_device_compliance()
-        total_devices = len(all_device_results)
-        compliant_count = sum(1 for d in all_device_results if d.get("compliant"))
-        non_compliant_count = total_devices - compliant_count
-        drift_count = sum(1 for d in all_device_results if not d.get("compliant"))
-        avg_score = (
-            round(sum(d.get("score", 0) for d in all_device_results) / max(total_devices, 1), 1)
-            if total_devices
-            else 100
-=======
         collected_config = (
             self.collected_root
             / device_name
             / "current.cfg"
->>>>>>> 5df13594e4ed23d051ced4a6e074580d23012e62
         )
 
         if not collected_config.exists():
@@ -146,18 +95,17 @@ class ComplianceService:
                 "results": [],
                 "diff": "",
                 "role": device.get("role", "router"),
-                "host": device.get(
-                    "container",
-                    "unknown",
-                ),
+                "host": device.get("container", "unknown"),
                 "device_type": "FRRouting",
                 "baseline": baseline_name,
+                "drift_detected": False,
                 "error": "No collected configuration available.",
             }
 
         baseline_path = (
-            self.baselines_root
-            / baseline_name
+            self.baselines_root / baseline_name
+            if baseline_name
+            else None
         )
 
         analysis = analyze_config(
@@ -166,8 +114,7 @@ class ComplianceService:
         )
 
         diff_text = ""
-
-        if baseline_path.exists():
+        if baseline_path and baseline_path.exists():
             diff_text = generate_diff(
                 baseline_path,
                 collected_config,
@@ -175,21 +122,10 @@ class ComplianceService:
 
         analysis["diff"] = diff_text
         analysis["role"] = device.get("role", "router")
-
-        # For Containerlab, display the container name
-        # instead of an old Cisco management address.
-        analysis["host"] = device.get(
-            "container",
-            "unknown",
-        )
-
+        analysis["host"] = device.get("container", "unknown")
         analysis["device_type"] = "FRRouting"
         analysis["baseline"] = baseline_name
-
-        # Drift and compliance are deliberately separate.
-        analysis["drift_detected"] = bool(
-            diff_text.strip()
-        )
+        analysis["drift_detected"] = bool(diff_text.strip())
 
         return analysis
 
@@ -292,12 +228,8 @@ class ComplianceService:
                         "rule_id": rule.get("rule_id"),
                         "name": rule.get("name"),
                         "status": rule.get("status"),
-                        "severity": rule.get(
-                            "severity"
-                        ),
-                        "remediation": rule.get(
-                            "remediation"
-                        ),
+                        "severity": rule.get("severity"),
+                        "remediation": rule.get("remediation"),
                     }
                 )
 
@@ -306,11 +238,7 @@ class ComplianceService:
             "compliant_devices": compliant_count,
             "non_compliant_devices": non_compliant_count,
             "drift_devices": drift_count,
-<<<<<<< HEAD
-            "average_score": avg_score,
-=======
             "average_score": average_score,
->>>>>>> 5df13594e4ed23d051ced4a6e074580d23012e62
             "severity_counts": severity_counts,
             "failed_rules": failed_rules,
             "devices": results,

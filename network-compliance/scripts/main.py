@@ -6,10 +6,11 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from collectors import get_collector_for_device
 from scripts.analyze import analyze_config, generate_diff
-from scripts.collect import collect_all_configs, load_inventory
+from scripts.collect import load_inventory
 from scripts.report import save_daily_summary_report, save_report
-from scripts.containerlab_collector import collect_all
+
 
 def main() -> int:
     base_path = Path(__file__).resolve().parents[1]
@@ -29,11 +30,21 @@ def main() -> int:
         print("No devices found in inventory.")
         return 1
 
-    try:
-        collected_files = collect_all(devices)
-    except Exception as exc:
-        print(f"Collection failed: {exc}")
-        return 1
+    collected_files = []
+
+    for device in devices:
+        if not device.get("enabled", True):
+            continue
+
+        collector = get_collector_for_device(device)
+        if collector is None:
+            print(f"No collector available for device {device.get('name')}.")
+            continue
+
+        try:
+            collected_files.append(collector.collect_device(device, collected_root))
+        except Exception as exc:
+            print(f"Collection failed for {device.get('name')}: {exc}")
 
     all_reports = []
 
@@ -56,6 +67,7 @@ def main() -> int:
 
         report_data = analyze_config(config_path, rules_path)
         diff_text = generate_diff(baseline_path, config_path)
+        report_data["drift_detected"] = bool(diff_text.strip())
         report_filename = reports_root / f"{device_name}_report.html"
         save_report(report_data, diff_text, report_filename)
         all_reports.append(report_data)
@@ -67,7 +79,6 @@ def main() -> int:
         print(f"Daily summary report generated: {daily_summary_path}")
 
     return 0
-
 
 
 if __name__ == "__main__":

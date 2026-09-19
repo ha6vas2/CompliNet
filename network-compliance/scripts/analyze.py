@@ -76,6 +76,53 @@ def pattern_exists(
     return pattern in config_lines
 
 
+def resolve_actual_value(
+    config_match: str,
+    config_lines: List[str],
+    match_mode: str,
+) -> str:
+    """Return the closest actual config value from the current device config."""
+
+    if not config_lines:
+        return "not configured"
+
+    match_value = config_match.strip()
+
+    if not match_value:
+        return "not configured"
+
+    if match_mode == "contains":
+        for line in config_lines:
+            if match_value in line:
+                return line
+    else:
+        if match_value in config_lines:
+            return match_value
+
+    match_tokens = [token for token in match_value.split() if token]
+    if not match_tokens:
+        return "not configured"
+
+    for target in (
+        match_value,
+        " ".join(match_tokens[1:]),
+        " ".join(match_tokens[:2]),
+        match_tokens[0],
+    ):
+        if not target:
+            continue
+        for line in config_lines:
+            if target in line:
+                return line
+
+    for key in ("router-id", "area", "hostname", "log syslog", "ipv6 forwarding", "network", "ospf"):
+        for line in config_lines:
+            if key in line:
+                return line
+
+    return "not configured"
+
+
 def evaluate_rule(
     rule: Dict[str, Any],
     config_lines: List[str],
@@ -107,6 +154,21 @@ def evaluate_rule(
     else:
         status = "FAIL"
 
+    actual_value = resolve_actual_value(
+        config_match,
+        config_lines,
+        match_mode,
+    )
+
+    if status == "PASS":
+        reason = "The configuration matches the approved policy."
+    elif rule_type == "forbidden":
+        reason = "The configuration violates the forbidden policy."
+    elif match_mode == "contains":
+        reason = "The required configuration fragment is missing from the device."
+    else:
+        reason = "The configured value does not match the approved policy."
+
     return {
         "rule_id": rule_id,
         "name": name,
@@ -115,6 +177,9 @@ def evaluate_rule(
         "remediation": remediation,
         "type": rule_type,
         "config": config_match,
+        "expected": config_match,
+        "actual": actual_value,
+        "reason": reason,
         "scope": rule.get("scope", "all"),
         "match": match_mode,
     }
@@ -179,6 +244,7 @@ def analyze_config(
         "config_path": str(config_path),
         "score": total_score,
         "compliant": compliant,
+        "drift_detected": False,
         "rules_evaluated": len(results),
         "results": results,
     }
