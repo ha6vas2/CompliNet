@@ -1,4 +1,6 @@
+import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -90,8 +92,12 @@ class RemediationService:
         if not playbook_path.exists():
             raise ValueError("Playbook is missing: %s" % playbook_path)
 
+        ansible_playbook = Path(sys.executable).with_name("ansible-playbook")
+        if not ansible_playbook.exists():
+            raise ValueError("Ansible is not installed in the active Python environment.")
+
         command = [
-            "ansible-playbook",
+            str(ansible_playbook),
             str(playbook_path),
             "-i",
             str(self.inventory_path),
@@ -99,7 +105,16 @@ class RemediationService:
             request["device_name"],
         ]
         try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=300, check=False)
+            environment = os.environ.copy()
+            environment.update({"LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"})
+            result = subprocess.run(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=300,
+                check=False,
+                env=environment,
+            )
         except (OSError, subprocess.TimeoutExpired) as exc:
             request["status"] = "failed"
             self.audit.record("remediation_executed", "failed", request["device_name"], {"request_id": request_id, "error": str(exc)})
