@@ -4,7 +4,11 @@ import DeviceList from './components/DeviceList';
 import ComplianceRules from './components/ComplianceRules';
 import RemediationGuide from './components/RemediationGuide';
 import AddDeviceModal from './components/AddDeviceModal';
-import { fetchSummary, fetchDevices, fetchRules, triggerAuditRun, createDevice } from './services/api';
+import {
+  fetchSummary, fetchDevices, fetchRules, triggerAuditRun, createDevice,
+  fetchSystemHealth, fetchAuditEvents, fetchRemediationRequests,
+  createRemediationRequest, approveRemediationRequest, executeRemediationRequest,
+} from './services/api';
 import './styles.css';
 
 const App = () => {
@@ -16,19 +20,28 @@ const App = () => {
   const [runningAudit, setRunningAudit] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [error, setError] = useState(null);
+  const [systemHealth, setSystemHealth] = useState(null);
+  const [auditEvents, setAuditEvents] = useState([]);
+  const [remediationRequests, setRemediationRequests] = useState([]);
 
   const loadAllData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const [summaryData, deviceData, ruleData] = await Promise.all([
+      const [summaryData, deviceData, ruleData, healthData, eventsData, requestsData] = await Promise.all([
         fetchSummary(),
         fetchDevices(),
         fetchRules(),
+        fetchSystemHealth(),
+        fetchAuditEvents(),
+        fetchRemediationRequests(),
       ]);
       setSummary(summaryData);
       setDevices(deviceData);
       setRules(ruleData);
+      setSystemHealth(healthData);
+      setAuditEvents(eventsData);
+      setRemediationRequests(requestsData);
     } catch (err) {
       console.error('Failed to load compliance data:', err);
       setError('Unable to connect to CompliNet FastAPI backend. Make sure the backend server is running on http://localhost:8000.');
@@ -175,6 +188,8 @@ const App = () => {
             {activeTab === 'overview' && (
               <ComplianceDashboard
                 summary={summary}
+                systemHealth={systemHealth}
+                auditEvents={auditEvents}
                 onRunAudit={handleRunAudit}
                 onSelectTab={(tab) => setActiveTab(tab)}
               />
@@ -189,7 +204,24 @@ const App = () => {
 
             {activeTab === 'rules' && <ComplianceRules rules={rules} />}
 
-            {activeTab === 'remediation' && <RemediationGuide summary={summary} />}
+            {activeTab === 'remediation' && (
+              <RemediationGuide
+                summary={summary}
+                requests={remediationRequests}
+                onCreateRequest={async (request) => {
+                  await createRemediationRequest(request);
+                  await loadAllData();
+                }}
+                onApproveRequest={async (requestId, approvedBy) => {
+                  await approveRemediationRequest(requestId, approvedBy);
+                  await loadAllData();
+                }}
+                onExecuteRequest={async (requestId) => {
+                  await executeRemediationRequest(requestId);
+                  await loadAllData();
+                }}
+              />
+            )}
           </>
         )}
       </main>

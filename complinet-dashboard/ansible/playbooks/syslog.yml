@@ -1,0 +1,21 @@
+---
+- name: Configure approved syslog settings
+  hosts: frr
+  gather_facts: false
+  tasks:
+    - name: Apply syslog configuration
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ container }}"
+          - vtysh
+          - -c
+          - configure terminal
+          - -c
+          - log syslog informational
+          - -c
+          - end
+          - -c
+          - write memory
+      changed_when: true

@@ -1,0 +1,21 @@
+---
+- name: Configure approved hostname settings
+  hosts: frr
+  gather_facts: false
+  tasks:
+    - name: Apply hostname configuration
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ container }}"
+          - vtysh
+          - -c
+          - configure terminal
+          - -c
+          - "hostname {{ hostname }}"
+          - -c
+          - end
+          - -c
+          - write memory
+      changed_when: true

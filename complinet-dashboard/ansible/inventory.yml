@@ -1,0 +1,14 @@
+all:
+  children:
+    frr:
+      hosts:
+        R1:
+          container: clab-complinet-r1
+          hostname: R1
+          router_id: 1.1.1.1
+        R2:
+          container: clab-complinet-r2
+          hostname: R2
+          router_id: 2.2.2.2
+      vars:
+        ansible_connection: local

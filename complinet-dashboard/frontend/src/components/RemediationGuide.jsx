@@ -1,14 +1,27 @@
 import React from 'react';
 
-const RemediationGuide = ({ summary }) => {
+const RemediationGuide = ({ summary, requests = [], onCreateRequest, onApproveRequest, onExecuteRequest }) => {
   const failedRules = summary?.failed_rules || [];
+
+  const requestRemediation = async (item) => {
+    const playbook = window.prompt('Choose playbook: syslog, ipv6, ospf, or hostname', 'hostname');
+    if (!playbook) return;
+    const requestedBy = window.prompt('Your name', 'operator');
+    if (!requestedBy) return;
+    await onCreateRequest({
+      device_name: item.device_name,
+      playbook: playbook.toLowerCase(),
+      requested_by: requestedBy,
+      reason: `Rule ${item.rule_id}: ${item.name}`,
+    });
+  };
 
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
         <h2 style={{ fontSize: '20px' }}>Network Engineering Remediation Playbook</h2>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Suggested configuration fixes for non-compliant devices (remediation suggestions only; no auto-pushes)
+          Every change requires an explicit approval before Ansible execution.
         </p>
       </div>
 
@@ -27,6 +40,7 @@ const RemediationGuide = ({ summary }) => {
                   <th>Severity</th>
                   <th>Status</th>
                   <th>Recommended Remediation Commands</th>
+                    <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,6 +72,54 @@ const RemediationGuide = ({ summary }) => {
                         <br />
                         {item.remediation}
                       </div>
+                    </td>
+                    <td>
+                      <button className="btn btn-secondary" onClick={() => requestRemediation(item)}>
+                        Request
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="card" style={{ marginTop: '24px' }}>
+        <h3 style={{ fontSize: '16px', marginBottom: '16px' }}>Remediation Requests</h3>
+        {requests.length === 0 ? (
+          <div style={{ color: 'var(--text-muted)' }}>No remediation requests have been submitted.</div>
+        ) : (
+          <div className="table-container">
+            <table className="custom-table">
+              <thead>
+                <tr><th>Device</th><th>Playbook</th><th>Requested By</th><th>Status</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                {requests.map((request) => (
+                  <tr key={request.id}>
+                    <td>{request.device_name}</td>
+                    <td><code>{request.playbook}</code></td>
+                    <td>{request.requested_by}</td>
+                    <td><span className="badge">{request.status}</span></td>
+                    <td>
+                      {request.status === 'pending' && (
+                        <button
+                          className="btn btn-secondary"
+                          onClick={() => {
+                            const approvedBy = window.prompt('Approved by', 'operator');
+                            if (approvedBy) onApproveRequest(request.id, approvedBy);
+                          }}
+                        >
+                          Approve
+                        </button>
+                      )}
+                      {request.status === 'approved' && (
+                        <button className="btn btn-primary" onClick={() => onExecuteRequest(request.id)}>
+                          Execute
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -34,3 +34,35 @@ export const createDevice = async (deviceData) => {
   return response.data;
 };
 
+export const fetchSystemHealth = async () => {
+  const response = await apiClient.get('/system/health');
+  return response.data;
+};
+
+export const fetchAuditEvents = async () => {
+  const response = await apiClient.get('/audit/events');
+  return response.data;
+};
+
+export const fetchRemediationRequests = async () => {
+  const response = await apiClient.get('/remediation/requests');
+  return response.data;
+};
+
+export const createRemediationRequest = async (request) => {
+  const response = await apiClient.post('/remediation/requests', request);
+  return response.data;
+};
+
+export const approveRemediationRequest = async (requestId, approvedBy) => {
+  const response = await apiClient.post(`/remediation/requests/${requestId}/approve`, {
+    approved_by: approvedBy,
+  });
+  return response.data;
+};
+
+export const executeRemediationRequest = async (requestId) => {
+  const response = await apiClient.post(`/remediation/requests/${requestId}/execute`);
+  return response.data;
+};
+

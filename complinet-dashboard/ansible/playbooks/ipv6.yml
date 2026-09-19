@@ -1,0 +1,21 @@
+---
+- name: Configure approved IPv6 settings
+  hosts: frr
+  gather_facts: false
+  tasks:
+    - name: Apply IPv6 configuration
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ container }}"
+          - vtysh
+          - -c
+          - configure terminal
+          - -c
+          - no ipv6 forwarding
+          - -c
+          - end
+          - -c
+          - write memory
+      changed_when: true

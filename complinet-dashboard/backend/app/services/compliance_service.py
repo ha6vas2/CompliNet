@@ -19,6 +19,7 @@ if str(NETWORK_COMPLIANCE_ROOT) not in sys.path:
 
 from scripts.analyze import analyze_config, generate_diff
 from scripts.containerlab_collector import collect_all
+from app.services.audit_service import audit_service
 
 
 class ComplianceService:
@@ -262,6 +263,22 @@ class ComplianceService:
         ).isoformat()
 
         summary = self.get_summary_metrics()
+
+        for device in summary.get("devices", []):
+            if not device.get("compliant", True):
+                audit_service.record(
+                    "compliance_detected",
+                    "open",
+                    device.get("device_name"),
+                    {
+                        "score": device.get("score", 0),
+                        "failed_rules": [
+                            rule.get("rule_id")
+                            for rule in device.get("results", [])
+                            if rule.get("status") in ("FAIL", "WARN")
+                        ],
+                    },
+                )
 
         summary["collection"] = {
             "status": "success",

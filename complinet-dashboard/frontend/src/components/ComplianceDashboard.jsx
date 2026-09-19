@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
+const ComplianceDashboard = ({ summary, systemHealth, auditEvents, onRunAudit, onSelectTab }) => {
   if (!summary) return <div>Loading compliance metrics...</div>;
 
   const {
@@ -15,6 +15,23 @@ const ComplianceDashboard = ({ summary, onRunAudit, onSelectTab }) => {
 
   return (
     <div>
+      <div className="metrics-grid">
+        <div className="card">
+          <div className="card-title">Controller Health</div>
+          <div className="card-value" style={{ color: systemHealth?.status === 'healthy' ? 'var(--pass-color)' : 'var(--fail-color)' }}>
+            {systemHealth?.status || 'Unavailable'}
+          </div>
+          <div className="card-subtext">
+            CPU {systemHealth?.cpu_percent ?? '-'}% · Memory {systemHealth?.memory_percent ?? '-'}%
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-title">Audit Events</div>
+          <div className="card-value">{auditEvents?.length || 0}</div>
+          <div className="card-subtext">Latest recorded operations</div>
+        </div>
+      </div>
+
       {/* Metric Cards */}
       <div className="metrics-grid">
         <div className="card">

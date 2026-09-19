@@ -1,0 +1,27 @@
+---
+- name: Configure approved OSPF settings
+  hosts: frr
+  gather_facts: false
+  tasks:
+    - name: Apply OSPF configuration
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ container }}"
+          - vtysh
+          - -c
+          - configure terminal
+          - -c
+          - router ospf
+          - -c
+          - "ospf router-id {{ router_id }}"
+          - -c
+          - network 10.0.12.0/30 area 0
+          - -c
+          - exit
+          - -c
+          - end
+          - -c
+          - write memory
+      changed_when: true
