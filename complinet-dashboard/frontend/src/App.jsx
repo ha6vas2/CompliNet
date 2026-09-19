@@ -51,34 +51,7 @@ const App = () => {
   };
 
   useEffect(() => {
-    let active = true;
-
-    const runLiveAudit = async () => {
-      try {
-        const newSummary = await triggerAuditRun();
-
-        if (!active) return;
-
-        setSummary(newSummary);
-
-        const newDevices = await fetchDevices();
-
-        if (active) {
-          setDevices(newDevices);
-        }
-      } catch (err) {
-        console.error('Live compliance audit failed:', err);
-      }
-    };
-
     loadAllData();
-
-    const interval = setInterval(runLiveAudit, 10000);
-
-    return () => {
-      active = false;
-      clearInterval(interval);
-    };
   }, []);
 
   const handleRunAudit = async () => {
@@ -120,10 +93,6 @@ const App = () => {
         </div>
 
         <div className="header-actions">
-          <div className="live-status">
-            <span className="live-dot"></span>
-            LIVE · 10s
-          </div>
           <button className="btn btn-secondary" onClick={() => setIsAddModalOpen(true)}>
             + Add Device
           </button>
@@ -190,7 +159,6 @@ const App = () => {
                 summary={summary}
                 systemHealth={systemHealth}
                 auditEvents={auditEvents}
-                onRunAudit={handleRunAudit}
                 onSelectTab={(tab) => setActiveTab(tab)}
               />
             )}

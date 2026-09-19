@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ComplianceDashboard = ({ summary, systemHealth, auditEvents, onRunAudit, onSelectTab }) => {
+const ComplianceDashboard = ({ summary, systemHealth, auditEvents, onSelectTab }) => {
   if (!summary) return <div>Loading compliance metrics...</div>;
 
   const {
